@@ -25,7 +25,22 @@ function! s:cache_project(prj) abort
         let desc = '[' . a:prj.name . '] ' . a:prj.path
         let cmd = "call projectile#open('" . a:prj.path . "')"
         call add(g:unite_source_menu_menus.Projects.command_candidates, [desc,cmd])
+        call writefile([a:prj.path], g:projectile_cache, "a")
     endif
+endfunction
+
+function! s:load_projects() abort
+    let l:project_lists = readfile(g:projectile_cache)
+    for item in l:project_lists
+        let l:project = {
+                    \ 'path' : item,
+                    \ 'name' : fnamemodify(item, ':t')
+                    \ }
+        let s:project_paths[l:project.path] = l:project
+        let desc = '[' . l:project.name . '] ' . l:project.path
+        let cmd = "call projectile#open('" . l:project.path . "')"
+        call add(g:unite_source_menu_menus.Projects.command_candidates, [desc,cmd])
+    endfor
 endfunction
 
 let g:unite_source_menu_menus =
@@ -35,12 +50,17 @@ let g:unite_source_menu_menus.Projects = {'description':
 let g:unite_source_menu_menus.Projects.command_candidates =
             \ get(g:unite_source_menu_menus.Projects,'command_candidates', [])
 
+if !filereadable(g:projectile_cache)
+    call writefile([], g:projectile_cache)
+endif
+call s:load_projects()
+
 " this function will use fuzzy finder, now only fzf is supported.
 function! projectile#list() abort
     if exists('g:loaded_fzf')
         FzfMenu Projects
     else
-        echomsg 'Fzf is needed to find project!'
+        echoerr 'Fzf is needed to find project!'
     endif
 endfunction
 
@@ -135,6 +155,16 @@ function! projectile#kill_project() abort
                     \ }
                     \ )
     endif
+endfunction
+
+function! projectile#remove_project() abort
+    let l:project_lists = readfile(g:projectile_cache)
+    call uniq(sort(l:project_lists))
+    call filter(l:project_lists, {idx, val -> isdirectory(val)})
+    call writefile(l:project_lists, g:projectile_cache)
+    let s:project_paths = {}
+    let g:unite_source_menu_menus.Projects.command_candidates = []
+    call s:load_projects()
 endfunction
 
 function! s:findDirInParent(what, where) abort

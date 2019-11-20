@@ -7,6 +7,10 @@ if !exists('g:projectile_rooter_patterns')
     let g:projectile_rooter_patterns = ['.git/', '_darcs/', '.hg/', '.bzr/', '.svn/', 'Cargo.toml', 'package.json', '.clang', '.pom.xml', 'build.sbt']
 endif
 
+if !exists('g:projectile_cache')
+    let g:projectile_cache = $HOME . '/.cache/projectile_cache'
+endif
+
 if !exists('g:projectile_rooter_automatically')
     let g:projectile_rooter_automatically = 1
 endif
@@ -51,3 +55,5 @@ function! s:menu(name) abort
 endfunction
 
 command! -nargs=+ -complete=custom,projectile#complete_project OpenProject :call projectile#OpenProject(<f-args>)
+
+command! -nargs=0 RemoveProject call projectile#remove_project()
