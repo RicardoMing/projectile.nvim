@@ -18,7 +18,7 @@ endif
 if g:projectile_rooter_automatically
     augroup projectile_rooter
         autocmd!
-        autocmd VimEnter,BufEnter * call projectile#current_root()
+        autocmd VimEnter,BufWinEnter * call projectile#current_root()
         autocmd BufWritePost * :call setbufvar('%', 'rootDir', '') | call projectile#current_root()
     augroup END
 endif
